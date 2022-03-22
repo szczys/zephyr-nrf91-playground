@@ -1,0 +1,9 @@
+
+/* Adding sensors */
+
+/ {
+	psctl: psctl {
+		compatible = "circuitdojo,psctl";
+		mode-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
+	};
+};
