@@ -1,0 +1,37 @@
+&spi2 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	cs-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&spi2_default>;
+	pinctrl-1 = <&spi2_sleep>;
+	pinctrl-names = "default", "sleep";
+
+	spidev: spi-device@0 {
+		label = "MCP3201";
+		reg = <0x0>;
+		compatible = "microchip,mcp3204";
+		spi-max-frequency = <100000>;
+		#io-channel-cells = <1>;
+	};
+};
+
+&pinctrl {
+	spi2_default: spi2_default {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 0, 19)>,
+				<NRF_PSEL(SPIM_MOSI, 0, 21)>,
+				<NRF_PSEL(SPIM_MISO, 0, 22)>;
+		};
+	};
+
+	spi2_sleep: spi2_sleep {
+		group1 {
+			psels = <NRF_PSEL(SPIM_SCK, 0, 19)>,
+				<NRF_PSEL(SPIM_MOSI, 0, 21)>,
+				<NRF_PSEL(SPIM_MISO, 0, 22)>;
+			low-power-enable;
+		};
+	};
+
+};
+
