@@ -12,6 +12,7 @@
 
 /* The devicetree node identifier for the "led0" alias. */
 #define LED0_NODE DT_ALIAS(led0)
+#define CS_NODE DT_ALIAS(cs0)
 
 /* https://stackoverflow.com/a/69152884 */
 #include <drivers/gpio.h>
@@ -26,7 +27,7 @@ const struct device *spi_dev;
 struct spi_cs_control spi_cs = {
     /* PA4 as CS pin */
     .gpio_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0)),
-    .gpio_pin = 18,
+    .gpio_pin = 1,
     .gpio_dt_flags = GPIO_ACTIVE_LOW,
     /* delay in microseconds to wait before starting the transmission and before releasing the CS line */
     .delay = 10,
@@ -50,6 +51,7 @@ void spi_init()
  * See the sample documentation for information on how to fix this.
  */
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+static const struct gpio_dt_spec cs = GPIO_DT_SPEC_GET(CS_NODE, gpios);
 
 void main(void)
 {
@@ -65,10 +67,13 @@ void main(void)
 		return;
 	}
 
+	gpio_pin_configure_dt(&cs, GPIO_OUTPUT_ACTIVE);
+
 	uint8_t my_buffer[10] = {0};
 	struct spi_buf my_spi_buffer = { my_buffer, 10 };
 	struct spi_buf_set rx_buff = { &my_spi_buffer, 10 };
 	spi_init();
+	gpio_pin_set_dt(&cs, 0);
 
 // 	const struct spi_dt_spec *spi_dev = SPI_DT_SPEC_GET(DT_NODELABEL(spidev),
 // 			SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8) |
@@ -78,8 +83,12 @@ void main(void)
 	
 	while (1) {
 // 		gpio_pin_set_dt(&led, 0);
-// 		k_sleep(K_MSEC(100));
+		
+		gpio_pin_set_dt(&cs, 1);
+		k_sleep(K_MSEC(100));
 		spi_read(spi_dev, &spi_cfg, &rx_buff);
+		k_sleep(K_MSEC(100));
+		gpio_pin_set_dt(&cs, 0);
 		printk("Received 10 bytes:");
 		printk("%d %d %d %d %d %d %d %d %d %d\n",
 					my_buffer[0],my_buffer[1],my_buffer[2],
@@ -90,7 +99,7 @@ void main(void)
 // 		gpio_pin_set_dt(&led, 1);
 
 	// 101 111010111 101
-// 		ret = gpio_pin_toggle_dt(&led);
+		ret = gpio_pin_toggle_dt(&led);
 		if (ret < 0) {
 			return;
 		}
