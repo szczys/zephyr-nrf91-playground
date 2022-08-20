@@ -1,9 +1,15 @@
 &spi2 {
-	compatible = "nordic,nrf-spim";
 	status = "okay";
+	cs-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
 	pinctrl-0 = <&spi2_default>;
 	pinctrl-1 = <&spi2_sleep>;
 	pinctrl-names = "default", "sleep";
+	mcp3201: mcp3201@0 {
+		compatible = "vnd,spi-device";
+		reg = <0>;
+		spi-max-frequency = <1600000>;
+		label = "mcp3201";
+	};
 };
 
 &pinctrl {
@@ -25,17 +31,3 @@
 	};
 };
 
-/ {
-
-	aliases {
-		cs0 = &cs_pin;
-	};
-
-	leds {
-		compatible = "gpio-leds";
-		cs_pin: cs_pin  {
-			gpios = < &gpio0 18 GPIO_ACTIVE_LOW >;
-			label = "CS Pin";
-		};
-	};
-};
