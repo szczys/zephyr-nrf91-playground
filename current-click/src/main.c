@@ -10,6 +10,8 @@
 #include <stdbool.h>
 LOG_MODULE_REGISTER(basic_spi, LOG_LEVEL_DBG);
 
+#include "golioth_app.h"
+
 #define SPI_OP	SPI_OP_MODE_MASTER | SPI_MODE_CPOL | SPI_MODE_CPHA | SPI_WORD_SET(8) | SPI_LINES_SINGLE
 
 /* 1000 msec = 1 sec */
@@ -67,6 +69,8 @@ void main(void)
 	LOG_INF("Started SPI demo");
 	int ret;
 
+	golioth_app_init();
+
 	if (!device_is_ready(led.port)) {
 		return;
 	}
@@ -97,6 +101,9 @@ void main(void)
 					);
 		ret = validate_adc_data(my_buffer, &valid_adc_data);
 		if (ret == 0) { LOG_INF("Got ADC value: 0x%04x", valid_adc_data); }
+		char sbuf[32] = {0};
+		snprintk(sbuf, sizeof(sbuf), "{\"adc\":%d}", valid_adc_data);
+		send_queued_data_to_golioth(sbuf, "sensor");
 
 		ret = gpio_pin_toggle_dt(&led);
 		if (ret < 0) {
